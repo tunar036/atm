@@ -24,7 +24,8 @@ class WithdrawUseCase
         $notes = $this->atmService->calculateNotes($amount);
 
         $account->balance -= $amount;
-
+        $account->save();
+        
         Transaction::create([
             'account_id' => $account->id,
             'amount' => $amount,
