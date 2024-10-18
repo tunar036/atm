@@ -25,6 +25,8 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        //
+        Gate::define('delete-transactions',function($user){
+            return $user->role === 'admin';
+        });
     }
 }
