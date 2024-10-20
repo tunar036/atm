@@ -16,5 +16,7 @@
 ## env file-ye düzəlişlər edin edin
 
    php artisan migrate
+
    php artisan db:seed
+
    php artisan ser
