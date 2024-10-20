@@ -15,9 +15,8 @@ class AccountSeeder extends Seeder
      */
     public function run()
     {
-        $user = User::inRandomOrder()->first();
         Account::create([
-            'user_id'=>$user->id,
+            'user_id'=>1,
             'balance'=> 1000.00,
         ]);
     }

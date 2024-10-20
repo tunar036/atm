@@ -9,10 +9,7 @@ class DeleteTransactionUseCase
 {
     public function execute($transactionId): bool
     {
-        if (gettype($transactionId) !== "integer") {
-            throw new Exception('Tranzaksiya id-i integer olmalidir');
-        }
-
+        $transactionId = intval($transactionId);
         $transaction = Transaction::find($transactionId);
         if (!$transaction) {
             throw new Exception('tranzaksiya tapilmadi');

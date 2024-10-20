@@ -15,14 +15,13 @@ class TransactionSeeder extends Seeder
      */
     public function run()
     {
-        $account = Account::inRandomOrder()->first();
         Transaction::create([
-            'account_id' => $account->id,
+            'account_id' =>1,
             'amount' => 100.00,
             'type' => 'withdraw',
         ]);
         Transaction::create([
-            'account_id' => $account->id,
+            'account_id' =>1,
             'amount' => 200.00,
             'type' => 'deposit',
         ]);

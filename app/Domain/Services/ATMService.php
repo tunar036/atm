@@ -2,25 +2,40 @@
 
 namespace App\Domain\Services;
 
+use App\Models\Banknote;
+use Illuminate\Support\Facades\DB;
+
 class ATMService
 {
-    public function calculateNotes(int $amount): array
+    public function calculateNotes($amount)
     {
-        $notes = [
-            200 => 0,
-            100 => 0,
-            50 => 0,
-            20 => 0,
-            10 => 0,
-            5 => 0,
-            1 => 0,
-        ];
-        foreach ($notes as $note => $count) {
-            if ($amount >= $note) {
-                $notes[$note] = intdiv($amount, $note);
-                $amount = $amount % $note;
+        return DB::transaction(function() use ($amount) {
+            $banknotes = Banknote::orderBy('denomination', 'desc')->get();
+            $notesToDispense = [];
+    
+            foreach ($banknotes as $banknote) {
+                if ($amount == 0) break;
+    
+                $denomination = $banknote->denomination;
+                $quantity = $banknote->quantity;
+    
+                $requiredNotes = intdiv($amount, $denomination);
+                $dispensedNotes = min($requiredNotes, $quantity);
+    
+                if ($dispensedNotes > 0) {
+                    $notesToDispense[$denomination] = $dispensedNotes;
+                    $amount -= $dispensedNotes * $denomination;
+    
+                    $banknote->quantity -= $dispensedNotes;
+                    $banknote->save();
+                }
             }
-        }
-        return $notes;
+    
+            if ($amount > 0) {
+                throw new \Exception('Bankda yetərli miqdarda əskinas yoxdur.');
+            }
+    
+            return $notesToDispense;
+        });
     }
 }
