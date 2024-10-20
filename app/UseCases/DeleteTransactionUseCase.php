@@ -3,22 +3,21 @@
 namespace App\UseCases;
 
 use App\Models\Transaction;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Exception;
 
 class DeleteTransactionUseCase
 {
-    public function execute(int $transactionId): bool
+    public function execute($transactionId): bool
     {
-
-        if (!Gate::allows('delete-transactions')) {
-           return false;
+        if (gettype($transactionId) !== "integer") {
+            throw new Exception('Tranzaksiya id-i integer olmalidir');
         }
 
         $transaction = Transaction::find($transactionId);
         if (!$transaction) {
-            return false;
+            throw new Exception('tranzaksiya tapilmadi');
         }
+
         $transaction->delete();
         return true;
     }

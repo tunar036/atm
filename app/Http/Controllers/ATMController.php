@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\UseCases\DeleteTransactionUseCase;
 use App\UseCases\WithdrawUseCase;
 use App\UseCases\GetTransactionHistoryUseCase;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -42,17 +43,17 @@ class ATMController extends Controller
         return response()->json($history);
     }
 
-    public function deleteTransaction(int $id): JsonResponse
+    public function deleteTransaction($id): JsonResponse
     {
-        $result = $this->deleteTransactionUseCase->execute($id);
-        if (!$result) {
-            if (!Gate::allows('delete-transactions')) {
-                return response()->json(['error' => 'Bu əməliyyatı yerinə yetirmək üçün icazəniz yoxdur.'], 403);
-            } else {
-                return response()->json(['error' => 'Tranzaksiya tapılmadı.'], 404);
-            }
+        if(!Gate::allows('delete-transactions')) {
+            return response()->json(['error' => 'Bu əməliyyatı yerinə yetirmək üçün icazəniz yoxdur.'], 403);
         }
-
-        return response()->json(['success' => 'Tranzaksiya silindi']);
+        
+        try {
+            $this->deleteTransactionUseCase->execute($id);
+            return response()->json(['success' => 'Tranzaksiya silindi']);
+        } catch (Exception $e){
+            return response()->json(['error' => $e->getMessage()]);
+        }
     }
 }

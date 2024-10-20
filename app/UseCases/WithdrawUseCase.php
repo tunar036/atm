@@ -5,6 +5,7 @@ namespace App\UseCases;
 use App\Domain\Services\ATMService;
 use App\Models\Account;
 use App\Models\Transaction;
+use Illuminate\Support\Facades\DB;
 
 class WithdrawUseCase
 {
@@ -16,26 +17,28 @@ class WithdrawUseCase
 
     public function execute(int $userId, int $amount)
     {
-        $account = Account::where('user_id', $userId)->first();
-        if (!$account || $account->balance < $amount) {
-            return ['error' => "Balans kifayet deyil"];
-        }
+        return DB::transaction(function () use($userId,$amount) {
+            $account = Account::where('user_id', $userId)->lockFOrUpdate()->first();
+            if (!$account || $account->balance < $amount) {
+                return ['error' => "Balans kifayet deyil"];
+            }
 
-        $notes = $this->atmService->calculateNotes($amount);
+            $notes = $this->atmService->calculateNotes($amount);
 
-        $account->balance -= $amount;
-        $account->save();
-        
-        Transaction::create([
-            'account_id' => $account->id,
-            'amount' => $amount,
-            'type' => 'withdraw'
-        ]);
+            $account->balance -= $amount;
+            $account->save();
 
-        return [
-            'message' => 'Pul ugurla chixarildi',
-            'notes' => $notes,
-            'new_balance' => $account->balance,
-        ];
+            Transaction::create([
+                'account_id' => $account->id,
+                'amount' => -$amount,
+                'type' => 'withdraw'
+            ]);
+
+            return [
+                'message' => 'Pul ugurla chixarildi',
+                'notes' => $notes,
+                'new_balance' => $account->balance,
+            ];
+        }, 5);
     }
 }
