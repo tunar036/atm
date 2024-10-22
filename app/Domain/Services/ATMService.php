@@ -3,6 +3,7 @@
 namespace App\Domain\Services;
 
 use App\Models\Banknote;
+use Exception;
 use Illuminate\Support\Facades\DB;
 
 class ATMService
@@ -32,7 +33,8 @@ class ATMService
             }
     
             if ($amount > 0) {
-                throw new \Exception('Bankda yetərli miqdarda əskinas yoxdur.');
+                // throw new Exception('Bankda yetərli miqdarda əskinas yoxdur.');
+                return ['error' => "Bankda yetərli miqdarda əskinas yoxdur."];
             }
     
             return $notesToDispense;
